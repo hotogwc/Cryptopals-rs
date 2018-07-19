@@ -1,4 +1,5 @@
 pub mod set1;
+pub mod util;
 
 #[cfg(test)]
 mod set1_test {
@@ -28,5 +29,19 @@ mod set1_test {
         let result = set1::xor_with_one_bytes(&set1::hex_to_bytes(target), &target_key);
         assert_eq!(String::from("Cooking MC's like a pound of bacon"), String::from_utf8(result).unwrap());
     }
-    
+
+    #[test]
+    fn single_char_file() {
+        let target_key = b'5';
+        let lines = util::read_file_to_vec_string("4.txt"); 
+        let result = lines
+                     .iter()
+                     .filter_map (|line| { 
+                        String::from_utf8(
+                            set1::xor_with_one_bytes(&set1::hex_to_bytes(line), &target_key)
+                        ).ok() 
+                      })
+                     .collect::<Vec<String>>();
+        assert!(result.contains(&String::from("Now that the party is jumping\n")));
+    }
 }
