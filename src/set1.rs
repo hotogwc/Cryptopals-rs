@@ -8,7 +8,7 @@ pub fn hex_to_bytes(hex_string: &str) -> Vec<u8> {
        let first = chunk[0].to_digit(16).unwrap();
        let second = chunk[1].to_digit(16).unwrap();
        (first << 4 | second) as u8
-    }).collect::<Vec<u8>>()
+    }).collect()
 }
 //turn bytes to hex string
 pub fn bytes_to_hex(x: &[u8]) -> String {
@@ -41,11 +41,19 @@ pub fn xor_bytes(left: &[u8], right: &[u8]) -> Vec<u8> {
     assert_eq!(left.len(), right.len());
     left.iter()
         .zip(right.iter())
-        .map (|(l,r)| l ^ r).collect::<Vec<u8>>()
+        .map (|(l,r)| l ^ r).collect()
 }
 
 //XOR Vec<u8> with single byte
 pub fn xor_with_one_bytes(source: &[u8], key: &u8) -> Vec<u8> {
     source.iter()
-          .map (|b| b ^ key).collect::<Vec<u8>>()
+          .map (|b| b ^ key).collect()
+}
+
+//XOR Vec<u8> with a cycle bytes
+pub fn xor_with_cycle_bytes(source: &[u8], cycle: &[u8]) -> Vec<u8> {
+    let mut cycle_iter = cycle.iter().cycle();
+    source.iter()
+          .map (|b| b ^ cycle_iter.next().unwrap())
+          .collect()
 }

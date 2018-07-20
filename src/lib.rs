@@ -33,7 +33,7 @@ mod set1_test {
 
     #[test]
     fn single_char_file() {
-        let target_key = b'5';
+        let target_key = b'5';  
         let lines = read_file_to_vec_string("4.txt"); 
         let result = lines
                      .iter()
@@ -45,4 +45,16 @@ mod set1_test {
                      .collect::<Vec<String>>();
         assert!(result.contains(&String::from("Now that the party is jumping\n")));
     }
+
+    #[test]
+    fn repeat_key_xor() {
+        let source = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal";
+        let key = b"ICE";
+        let expected = String::from("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
+        assert_eq!(
+            bytes_to_hex(&xor_with_cycle_bytes(&source.as_bytes(), key)), 
+            expected
+        );
+    }
+
 }
