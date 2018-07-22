@@ -41,13 +41,15 @@ pub fn xor_bytes(left: &[u8], right: &[u8]) -> Vec<u8> {
     assert_eq!(left.len(), right.len());
     left.iter()
         .zip(right.iter())
-        .map (|(l,r)| l ^ r).collect()
+        .map (|(l,r)| l ^ r)
+        .collect()
 }
 
 //XOR Vec<u8> with single byte
 pub fn xor_with_one_bytes(source: &[u8], key: &u8) -> Vec<u8> {
     source.iter()
-          .map (|b| b ^ key).collect()
+          .map (|b| b ^ key)
+          .collect()
 }
 
 //XOR Vec<u8> with a cycle bytes
@@ -56,4 +58,13 @@ pub fn xor_with_cycle_bytes(source: &[u8], cycle: &[u8]) -> Vec<u8> {
     source.iter()
           .map (|b| b ^ cycle_iter.next().unwrap())
           .collect()
+}
+
+//Hamming distance between two strings
+pub fn hamming_distance(lhs: &str, rhs: &str) -> u32 {
+    assert_eq!(lhs.len(), rhs.len());
+    let (lhs_bytes, rhs_bytes) = (lhs.as_bytes(), rhs.as_bytes());
+    (0..lhs.len())
+        .map (|i| (lhs_bytes[i] ^ rhs_bytes[i]).count_ones() )
+        .sum()
 }
