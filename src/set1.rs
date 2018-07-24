@@ -79,7 +79,7 @@ pub fn decode_base64(base64_str: &str)-> Vec<u8> {
               .collect::<Vec<char>>()
               .chunks(4)
               .for_each (|chunk| {
-                  println!("{:?}", chunk);
+                  
         let mut y = match chunk.len() {
             4 => transform_u32_to_vec_u8(
                 index_of_base64_table(&chunk[0]) << 18 | 
