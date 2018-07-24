@@ -61,4 +61,12 @@ mod set1_test {
     fn test_hamming_distance() {
         assert_eq!(hamming_distance("this is a test", "wokka wokka!!!"), 37);
     }
+
+    #[test]
+    fn test_decode_base64() {
+        let input = "Hello world";
+        let base64_str = bytes_to_base64(&input.as_bytes());
+        let decode_bytes = decode_base64(&base64_str);
+        assert_eq!(String::from(input), String::from_utf8(decode_bytes).unwrap());
+    }
 }

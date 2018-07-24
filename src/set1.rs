@@ -1,3 +1,5 @@
+
+
 pub const BASE64_TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 //turn hex to bytes
@@ -16,7 +18,7 @@ pub fn bytes_to_hex(x: &[u8]) -> String {
 }
 
 //turn bytes to base64 string
-pub fn bytes_to_base64(bytes: &Vec<u8>) -> String {
+pub fn bytes_to_base64(bytes: &[u8]) -> String {
     let mut buffer = Vec::with_capacity(bytes.len()/3*4);
     bytes.chunks(3).for_each ( |chunk| {
         let y = match chunk.len() {
@@ -67,4 +69,50 @@ pub fn hamming_distance(lhs: &str, rhs: &str) -> u32 {
     (0..lhs.len())
         .map (|i| (lhs_bytes[i] ^ rhs_bytes[i]).count_ones() )
         .sum()
+}
+
+//decode base64 from base64string to vec u8
+pub fn decode_base64(base64_str: &str)-> Vec<u8> {
+    let mut buffer: Vec<u8> = Vec::with_capacity(base64_str.len()*4/3);
+    base64_str.chars()
+              .filter (|c| (*c as u8) != b'=')
+              .collect::<Vec<char>>()
+              .chunks(4)
+              .for_each (|chunk| {
+                  println!("{:?}", chunk);
+        let mut y = match chunk.len() {
+            4 => transform_u32_to_vec_u8(
+                index_of_base64_table(&chunk[0]) << 18 | 
+                index_of_base64_table(&chunk[1]) << 12 | 
+                index_of_base64_table(&chunk[2]) << 6 | 
+                index_of_base64_table(&chunk[3]), 
+                3),
+            3 => transform_u32_to_vec_u8(
+                index_of_base64_table(&chunk[0]) << 18 | 
+                index_of_base64_table(&chunk[1]) << 12 | 
+                index_of_base64_table(&chunk[2]) << 6 , 
+                2),
+            2 => transform_u32_to_vec_u8(
+                index_of_base64_table(&chunk[0]) << 18 | 
+                index_of_base64_table(&chunk[1]) << 12 , 
+                1),
+            _ => panic!("invalid base64 string"),
+        };
+        buffer.append(&mut y);
+    });
+    return buffer;
+} 
+
+fn transform_u32_to_vec_u8(x: u32, size: usize) -> Vec<u8> {
+    let offset_array = [16, 8, 0];
+    (0..size).map (|i| 
+        ((x >> offset_array[i]) & 0xff) as u8
+     ).collect()
+}
+
+fn index_of_base64_table(character: &char) -> u32 {
+    match BASE64_TABLE.iter().position(|x| *x == (*character as u8)) {
+        Some(i) => i as u32,
+        None => panic!("invalid base64 character"),
+    }
 }
