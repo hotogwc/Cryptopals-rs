@@ -1,10 +1,15 @@
+extern crate openssl;
+
 pub mod set1;
 pub mod util;
+
+
 
 #[cfg(test)]
 mod set1_test {
     use super::set1::*;
     use super::util::*;
+    use openssl::symm::{decrypt, Cipher};
     #[test]
     fn encode_base64() {
         let expected = String::from("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
@@ -68,5 +73,16 @@ mod set1_test {
         let base64_str = bytes_to_base64(&input.as_bytes());
         let decode_bytes = decode_base64(&base64_str);
         assert_eq!(String::from(input), String::from_utf8(decode_bytes).unwrap());
+    }
+
+    #[test]
+    fn decrypt_ecb() {
+        let cipher = Cipher::aes_128_ecb();
+        let data_content = read_file_to_vec_string("7.txt").concat();
+        let data = data_content.as_bytes();
+        let key = "YELLOW SUBMARINE".as_bytes();
+        
+        let cipher_text = decrypt(cipher, key, None, data).unwrap();
+        
     }
 }

@@ -1,4 +1,7 @@
 use super::util;
+extern crate openssl;
+
+use openssl::symm as cipher;
 
 pub const BASE64_TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -126,6 +129,7 @@ pub fn solve_vigenere() {
         let test_block = &blocks[0];
         for b in BASE64_TABLE.iter() {
             let decoded = xor_with_one_bytes(test_block, b);
+            println!("{:?}", decoded);
         }
     });
 }
@@ -160,4 +164,16 @@ fn transpose(ct: &[u8], key_size: usize) -> Vec<Vec<u8>> {
         y[i%key_size].push(ct[i])
     });
     y
+}
+
+pub fn aes128_ecb_decrypt(k: &[u8], c: &[u8]) -> Vec<u8> {
+    assert!(k.len() == 16 && c.len()%16 == 0);
+    let mut aes = cipher::Crypter::new(cipher::Cipher::aes_128_ecb(),cipher::Mode::Decrypt, k, None).unwrap();
+    aes.pad(false);
+    let mut output = vec![0; c.len() + cipher::Cipher::aes_128_ecb().block_size()];
+    let mut count: usize = 0;
+    c.chunks(16).for_each(|x| { 
+        count += aes.update(x, &mut output[count..]).unwrap();
+    });
+    output
 }
