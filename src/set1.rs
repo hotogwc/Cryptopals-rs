@@ -1,4 +1,4 @@
-
+use super::util;
 
 pub const BASE64_TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -63,11 +63,10 @@ pub fn xor_with_cycle_bytes(source: &[u8], cycle: &[u8]) -> Vec<u8> {
 }
 
 //Hamming distance between two strings
-pub fn hamming_distance(lhs: &str, rhs: &str) -> u32 {
+pub fn hamming_distance(lhs: &[u8], rhs: &[u8]) -> u32 {
     assert_eq!(lhs.len(), rhs.len());
-    let (lhs_bytes, rhs_bytes) = (lhs.as_bytes(), rhs.as_bytes());
     (0..lhs.len())
-        .map (|i| (lhs_bytes[i] ^ rhs_bytes[i]).count_ones() )
+        .map (|i| (lhs[i] ^ rhs[i]).count_ones() )
         .sum()
 }
 
@@ -79,7 +78,7 @@ pub fn decode_base64(base64_str: &str)-> Vec<u8> {
               .collect::<Vec<char>>()
               .chunks(4)
               .for_each (|chunk| {
-                  
+
         let mut y = match chunk.len() {
             4 => transform_u32_to_vec_u8(
                 index_of_base64_table(&chunk[0]) << 18 | 
@@ -98,9 +97,10 @@ pub fn decode_base64(base64_str: &str)-> Vec<u8> {
                 1),
             _ => panic!("invalid base64 string"),
         };
+        
         buffer.append(&mut y);
     });
-    return buffer;
+    buffer
 } 
 
 fn transform_u32_to_vec_u8(x: u32, size: usize) -> Vec<u8> {
@@ -115,4 +115,49 @@ fn index_of_base64_table(character: &char) -> u32 {
         Some(i) => i as u32,
         None => panic!("invalid base64 character"),
     }
+}
+//solve Vigenere
+pub fn solve_vigenere() {
+    let cipher_text = util::read_file_to_vec_string("6.txt").concat();
+    let base64_decoded = decode_base64(&cipher_text[..]);
+    let key_sizes = predict_key_size(&base64_decoded);
+    key_sizes.into_iter().for_each (|size| {
+        let blocks = transpose(&base64_decoded, size);
+        let test_block = &blocks[0];
+        for b in BASE64_TABLE.iter() {
+            let decoded = xor_with_one_bytes(test_block, b);
+        }
+    });
+}
+
+pub fn ascii(x: &[u8]) -> Vec<u8> {
+    x.iter().map(|y| y.clone()).filter(|&y| 31 < y && y < 127).collect::<Vec<u8>>()
+}
+
+//analyze top 3 KEYSIZE of ciphertext
+pub fn predict_key_size(ct: &[u8]) -> Vec<usize> {
+    let mut v: Vec<(usize,f64)> = (2..40).map (|i| { 
+        (i, average_hamming_distance(ct, i))
+    }).collect();
+    
+    v.sort_by(|l,r| util::cmp_f64(&l.1, &r.1));
+    // println!("{:?}", v)
+    v.iter().take(3).map (|v| v.0).collect()
+}
+
+fn average_hamming_distance(ct: &[u8], key_size: usize) -> f64 {
+    ((hamming_distance(&ct[0*key_size..1*key_size], &ct[1*key_size..2*key_size]) as f64) / (key_size as f64) +
+   (hamming_distance(&ct[2*key_size..3*key_size], &ct[3*key_size..4*key_size]) as f64) / (key_size as f64) + 
+   (hamming_distance(&ct[4*key_size..5*key_size], &ct[5*key_size..6*key_size]) as f64) / (key_size as f64) +
+   (hamming_distance(&ct[6*key_size..7*key_size], &ct[7*key_size..8*key_size]) as f64) / (key_size as f64)) / 4.0
+}
+
+
+fn transpose(ct: &[u8], key_size: usize) -> Vec<Vec<u8>> {
+    let mut y = Vec::new();
+    (0..key_size).for_each(|_| y.push(Vec::new()));
+    (0..ct.len()).for_each (|i|{
+        y[i%key_size].push(ct[i])
+    });
+    y
 }

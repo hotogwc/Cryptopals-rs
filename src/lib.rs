@@ -59,7 +59,7 @@ mod set1_test {
 
     #[test]
     fn test_hamming_distance() {
-        assert_eq!(hamming_distance("this is a test", "wokka wokka!!!"), 37);
+        assert_eq!(hamming_distance("this is a test".as_bytes(), "wokka wokka!!!".as_bytes()), 37);
     }
 
     #[test]
