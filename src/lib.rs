@@ -75,14 +75,21 @@ mod set1_test {
         assert_eq!(String::from(input), String::from_utf8(decode_bytes).unwrap());
     }
 
+    // #[test]
+    // fn decrypt_ecb() {
+    //     let cipher = Cipher::aes_128_ecb();
+    //     let data_content = read_file_to_vec_string("7.txt").concat();
+    //     let data = data_content.as_bytes();
+    //     let key = "YELLOW SUBMARINE".as_bytes();
+        
+    //     let cipher_text = decrypt(cipher, key, None, data).unwrap();
+        
+    // }
+
     #[test]
-    fn decrypt_ecb() {
-        let cipher = Cipher::aes_128_ecb();
-        let data_content = read_file_to_vec_string("7.txt").concat();
-        let data = data_content.as_bytes();
-        let key = "YELLOW SUBMARINE".as_bytes();
-        
-        let cipher_text = decrypt(cipher, key, None, data).unwrap();
-        
+    fn test_pkcs7_padding() {
+        let input = "YELLOW SUBMARINE".as_bytes();
+        let output = pkcs7_padding(input, 20);
+        assert_eq!(output, "YELLOW SUBMARINE\x04\x04\x04\x04".as_bytes());
     }
 }
