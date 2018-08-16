@@ -87,6 +87,14 @@ mod set1_test {
     // }
 
     #[test]
+    fn ecb_test() {
+        let data_content = read_file_to_vec_string("7.txt").concat();
+        let data = decode_base64(&data_content);
+        let key = "YELLOW SUBMARINE".as_bytes();
+        assert_eq!(data, aes128_ecb_encrypt(key, &aes128_ecb_decrypt(key, &data).unwrap()).unwrap())
+    }
+
+    #[test]
     fn test_pkcs7_padding() {
         let input = "YELLOW SUBMARINE".as_bytes();
         let output = pkcs7_padding(input, 20);

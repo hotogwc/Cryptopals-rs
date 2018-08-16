@@ -1,7 +1,7 @@
 use super::util;
 extern crate openssl;
 
-use openssl::symm as cipher;
+use openssl::symm::{decrypt, encrypt, Cipher};
 
 pub const BASE64_TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -166,18 +166,17 @@ fn transpose(ct: &[u8], key_size: usize) -> Vec<Vec<u8>> {
     y
 }
 
-pub fn aes128_ecb_decrypt(k: &[u8], c: &[u8]) -> Vec<u8> {
-    assert!(k.len() == 16 && c.len()%16 == 0);
-    let mut aes = cipher::Crypter::new(cipher::Cipher::aes_128_ecb(),cipher::Mode::Decrypt, k, None).unwrap();
-    aes.pad(false);
-    let mut output = vec![0; c.len() + cipher::Cipher::aes_128_ecb().block_size()];
-    let mut count: usize = 0;
-    c.chunks(16).for_each(|x| { 
-        count += aes.update(x, &mut output[count..]).unwrap();
-    });
-    output
+pub fn aes128_ecb_decrypt(k: &[u8], data: &[u8]) -> Result<Vec<u8>, &'static str> {
+    assert!(k.len() == 16 && data.len()%16 == 0);
+    let cipher = Cipher::aes_128_ecb();
+    decrypt(cipher, k, None, data).map_err(|_| "decrypt ecb failed" )
 }
 
+
+pub fn aes128_ecb_encrypt(k: &[u8], data: &[u8]) -> Result<Vec<u8>, &'static str> {
+    let cipher = Cipher::aes_128_ecb();
+    encrypt(cipher, k, None, data).map_err(|_| "encrypt ecb failed" )
+}
 
 pub fn pkcs7_padding(bytes: &[u8], block_size: usize) -> Vec<u8> {
     let padding = (block_size - (bytes.len() % block_size)) as u8;
